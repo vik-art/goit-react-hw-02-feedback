@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Statistics from "./Statistics/Statistics";
+import FeedbackOptions from './FeedbackOptions/FeedbackOptions'
 
 import s from './Feedback.module.css';
 
@@ -9,41 +11,46 @@ class Feedback extends React.Component {
         neutral: 0,
         bad: 0
       }
-      handleGood = () => {
-              this.setState(prevState => {
-                  return {
-              good: prevState.good + 1,
-          }
-        })
+      countTotalFeedback = () => {
+        const { good, neutral, bad } = this.state;
+        const result = good + neutral + bad;
+        return result;
     }
-    handleNeutral = () => {
-        this.setState(prevState => {
-            return {
-        neutral: prevState.neutral + 1,
+    countPositiveFeedbackPercentage = () => {
+        const totalResults = this.countTotalFeedback();
+        const { good } = this.state;
+        const positiveFeedbacks = (good * 100) / totalResults;
+        return Math.round(positiveFeedbacks)
     }
-  })
-}
-handleBad = () => {
-    this.setState(prevState => {
-        return {
-    bad: prevState.bad + 1,
-}
-})
-}
-    render(){     
+    onLeaveFeedback = (e) => {
+        const name = e.target.name;
+        this.setState((prevState) => ({
+        [name]: prevState[name] + 1
+        }))
+    }
+    render(){   
+        const {good, neutral, bad } = this.state;
+        const total = this.countTotalFeedback();
+        const positive = this.countPositiveFeedbackPercentage();
+        const keys = Object.keys(this.state);
     return (
         <>
         <h2 className={s.headling}>Please leave your feedback</h2>
-        <div className={s.buttons}>
-        <button type="button" onClick={this.handleGood}>Good</button>
-        <button type="button" onClick={this.handleNeutral}>Neutral</button>
-        <button type="button" onClick={this.handleBad}>Bad</button>
-        </div>
-        <div className={s.stats}>
-            <h2>Statistics</h2>
-            <p>Good: {this.state.good}</p>
-            <p>Neutral: {this.state.neutral}</p>
-            <p>Bad: {this.state.bad}</p>
+        <FeedbackOptions 
+        options={keys}
+        onLeaveFeedback = {this.onLeaveFeedback}
+        />
+        <div className={s.stats}> 
+        <h2>Statistics</h2>
+        { total === 0 ? (<h3>No feedback given</h3>) :
+            (<Statistics 
+            good = {good}
+            neutral = {neutral}
+            bad = {bad}
+            total = {total}
+            positive = {positive}
+            />)
+        }
         </div>
         </>
     )
